@@ -39,15 +39,43 @@
     padding-top: 2em;
 }
 
-#t_points td{
+#t_points tr {
+  display: flex;
+}
+
+#t_points .d-flex {
   display: flex;
 }
 
 
+#map{
+  width: 100%;
+    height: 500px;
+}
+
+.mt-3{
+  margin-top: 3em;
+}
+
+.flex {
+  display: flex;
+}
+
+.border-left{
+  border-left: 3px solid rgb(51, 51, 51) !important;
+  background-color: #f5f5dc63;
+}
+.w-100{
+  width: 100%;
+}
+.m-2em{
+  margin-bottom: 2em;
+}
 
   </style>
   <link href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" rel="stylesheet" type="text/css" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /> -->
 	<link href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" rel="stylesheet" type="text/css" />
 
 
@@ -57,22 +85,27 @@
 
 <div class="container mt-3">
 <div class="row full">
-<div class="col col-sm-4 full" style="overflow: auto;">
-  <h1 class="search-title"><img src="https://fonts.gstatic.com/s/i/googlematerialicons/place/v15/24px.svg">
-    Find a location near you
-    </h1>
-  <input id="searchInput" class="controls" type="text" placeholder="Enter a location">
-  <table class="table table-bordered mt-3">
+  <div class="col col-sm-12 full">
+    <h1 class="search-title"><img src="https://fonts.gstatic.com/s/i/googlematerialicons/place/v15/24px.svg">
+      Find a location near you
+      </h1>
+    <input id="searchInput" class="controls w-100 m-2em" type="text" placeholder="Enter a location">
+  </div>
+<div class="col col-sm-4 full" style="overflow: auto;max-height: 500px;">
+
+  <table class="table table-bordered">
     <thead>
       <tr>
-        <th>All locations (2)</th>
+        <th>All locations (4)</th>
       </tr>
     </thead>
     <tbody id="t_points"></tbody>
   </table>
    <input id="maps" type="hidden"/>
 </div>
-<div id="map" class="col col-sm-8 full"></div>
+<div class="col col-sm-8 full">
+  <div id="map" ></div>
+</div>
 </div>
 </div>
  
@@ -81,7 +114,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.7/js/tether.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script> -->
+<script type="text/script" src="js/bootstrap.min.js"></script>
 
 
  
@@ -98,6 +132,7 @@ var map = new google.maps.Map(document.getElementById('maps'), {
       center: {lat: -33.8688, lng: 151.2195},
       zoom: 13
     });
+
  var input = document.getElementById('searchInput');
     var autocomplete = new google.maps.places.Autocomplete(input);
     autocomplete.bindTo('bounds', map);
@@ -116,16 +151,20 @@ var map = new google.maps.Map(document.getElementById('maps'), {
 	
 }
 
-var map = L.map('map').setView([12.9715987,77.5945627], 16);
+var map = L.map('map').setView([12.9867603,77.59583529999999], 16);
 var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   noWrap: true,
 	maxZoom: 19,
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-function addRowTable(code, coords, desc){
+function addRowTable(code, coords, desc, no){
   var tr = document.createElement("tr");
+  var dynamicId = "element_" + no; 
   var td = document.createElement("td");
+  var divwhole = document.createElement("div");
+  divwhole.setAttribute("id", dynamicId);
+  divwhole.setAttribute("class", 'd-flex');
   var divleft = document.createElement("div");
   var h2 = document.createElement("h2");
   var p = document.createElement("p");
@@ -158,12 +197,12 @@ circleElement.setAttribute('stroke', '#1967d2');
   svgElement.appendChild(pathElement);
   svgElement.appendChild(pathElement2);
 svgElement.appendChild(circleElement);
-
   h2.textContent = code;
   p.textContent = desc;
   tr.appendChild(td);
-  td.appendChild(divleft);
-  td.appendChild(divrightt);
+  td.appendChild(divwhole);
+  divwhole.appendChild(divleft);
+  divwhole.appendChild(divrightt);
   divleft.appendChild(h2);
   divleft.appendChild(p);
   divleft.className = 'left-class-name';
@@ -180,7 +219,7 @@ function addMarker(code,lat,lng){
   p.alt = code;
   p.bindPopup(code);
   p.addTo(map);
-map.flyTo([lat,lng], 17);
+  map.flyTo([lat,lng], 17);
   var c = L.circle([lat,lng], {
     color: 'red',
     fillColor: '#f03',
@@ -190,29 +229,63 @@ map.flyTo([lat,lng], 17);
   buffers.push(c);
 }
 
-function addMarkerload(code,lat,lng){
-  var p = L.marker([lat,lng]);
-  p.title = code;
-  p.alt = code;
-  p.bindPopup(code);
-  p.addTo(map);
-  var c = L.circle([lat,lng], {
-    color: 'red',
-    fillColor: '#f03',
-    fillOpacity: 0.5,
-    radius: 0
-  }).addTo(map);
-  buffers.push(c);
-}
+
+
+function addMarkerload(code, lat, lng, no) {
+    var elementId = 'element_' + no;
+    var elements = document.getElementById(elementId);
+    var elementsclass = document.getElementsByClassName("d-flex");
+      for (var i = 0; i < elementsclass.length; i++) {
+        elementsclass[i].classList.add("flex");
+      }
+    if (elements) {
+      var clonedElements = elements.cloneNode(true);
+      var p = L.marker([lat, lng]);
+      p.title = code;
+      p.alt = code;
+      p.bindPopup(clonedElements);
+      p.addTo(map);
+      p.addEventListener('click', function() {
+      scrollToTableRow(no);
+      });
+      var c = L.circle([lat, lng], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: 0
+      }).addTo(map);
+      buffers.push(c);
+    } else {
+      setTimeout(function () {
+        addMarkerload(code, lat, lng, no);
+      }, 100);
+    }
+  }
+
+  function scrollToTableRow(no) {
+    const elementId = 'element_' + no;
+  const tableRow = document.getElementById(elementId);
+  var elementsclassborder = document.getElementsByClassName("border-left");
+  for (var i = 0; i < elementsclassborder.length; i++) {
+    elementsclassborder[i].classList.remove("border-left");
+  }
+  if (tableRow) {
+    const parentElement = tableRow.parentNode;
+    parentElement.classList.add('border-left');
+    tableRow.scrollIntoView({ behavior: 'smooth' });
+  }
+  }
 
 
 $(document).ready(function (){
   var points = [["Superior Codelabs", "Ground Floor, Prestige Center Point cunningham road, Vasanth Nagar Bengalore, Karnataka, India",12.9867603,77.59583529999999],
-  ["Superior Codelabs", "Ground Floor, Prestige Center Point cunningham road, Vasanth Nagar Bengalore, Karnataka, India",12.9867603,77.59583529999999],
+  ["Shivaji Nagar", "Shivaji Nagar Bus Station, Bharati Nagar, Shivaji Nagar, Bengaluru, Karnataka, India",12.9835794,77.60322409999999],
+  ["Cunningham Road", "Cunningham Road, Vasanth Nagar, Bengaluru, Karnataka, India",12.9876915,77.5944579],
+  ["Hebbal", "Hebbal Ring Road, Bengaluru, Karnataka, India",13.0353557,77.59878739999999],
     ];
   for (var i=0; i < points.length; i++){
-    addMarkerload(points[i][0],points[i][2],points[i][3]);
-	  addRowTable(points[i][0], [points[i][2],points[i][3]],points[i][1]);
+    addMarkerload(points[i][0],points[i][2],points[i][3],i);
+	  addRowTable(points[i][0], [points[i][2],points[i][3]],points[i][1],i);
 	 
   }
 });
