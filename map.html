@@ -164,7 +164,7 @@
   <table class="table table-bordered" id="locationgenuvine">
     <thead>
       <tr>
-        <th>All locations (4)</th>
+        <th>All locations <span id="count">(4)</span></th>
       </tr>
     </thead>
     <tbody id="t_points"></tbody>
@@ -201,6 +201,7 @@
 
 document.addEventListener("DOMContentLoaded", function() {
    isGlobal  = false;
+   markersstorage = [];
 });
 
 setTimeout(function () {
@@ -267,6 +268,7 @@ function updatePlacesList() {
   var loadingIndicator = document.getElementById("loading-indicator");
   var locationgenuvine = document.getElementById("locationgenuvine");
   var leftContentDiv = document.getElementById("left-content");
+  var countDiv = document.getElementById("count");
   loadingIndicator.style.display = "block";
   var tbodyElement = document.getElementById("t_points");
 tbodyElement.innerHTML = ""; // Empty the contents of the tbody element
@@ -286,7 +288,7 @@ fetch('test.json')
       // Filter the data based on latitude and longitude
       var filteredData = data.filter(item => {
         var distance = calculateDistance(item.latitude, item.longitude, latitude, longitude);
-        return distance <= 1000;
+        return distance <= 5000;
       });
       // Use the filtered data as needed
       console.log(filteredData);
@@ -298,6 +300,7 @@ fetch('test.json')
         addRowTable(locationdata.name, [locationdata.latitude,locationdata.longitude],locationdata.address_line_1,i, locationdata.website, locationdata.image_url, locationdata.phone, locationdata.email);
         addMarkerload(locationdata.name,locationdata.latitude,locationdata.longitude,i);
       }
+      countDiv.innerHTML = filteredData.length;
       }else{
         var htmlCode = `<div class="stockist-result-message">
           <i class="fas fa-map-marker-alt stockist-icon stockist-feature-color" aria-hidden="true"></i>
@@ -305,8 +308,10 @@ fetch('test.json')
                 </div>`;
                 leftContentDiv.innerHTML = htmlCode;
         locationgenuvine.style.display = "none";
+        removeMarkerfuc();
       }
       loadingIndicator.style.display = "none";
+
       // loop
     })
     .catch(error => {
@@ -421,7 +426,7 @@ function addMarker(code,lat,lng){
   p.addTo(map);
   map.flyTo([lat,lng], 17);
   var c = L.circle([lat,lng], {
-    color: 'red',
+    color: 'transparent',
     fillColor: '#f03',
     fillOpacity: 0.5,
     radius: 0
@@ -430,7 +435,12 @@ function addMarker(code,lat,lng){
 }
 
 
-
+function removeMarkerfuc(){
+  markersstorage.forEach(function(marker) {
+  map.removeLayer(marker);
+});
+markersstorage = [];
+}
 
 
 function addMarkerload(code, lat, lng, no) {
@@ -447,11 +457,12 @@ function addMarkerload(code, lat, lng, no) {
       p.alt = code;
       p.bindPopup(clonedElements);
       p.addTo(map);
+      markersstorage.push(p);
       p.addEventListener('click', function() {
       scrollToTableRow(no);
       });
       var c = L.circle([lat, lng], {
-        color: 'red',
+        color: 'transparent',
         fillColor: '#f03',
         fillOpacity: 0.5,
         radius: 0
