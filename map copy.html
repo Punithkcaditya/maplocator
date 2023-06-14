@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title></title>
+  <style>
+    html, body, .full, #map{
+  margin: 0;
+  padding:0;
+}
+  </style>
+  <link href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<link href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" rel="stylesheet" type="text/css" />
+
+
+
+</head>
+<body>
+
+<div class="container mt-3">
+<div class="row full">
+<div class="col col-sm-3 full" style="overflow: auto;">
+  <h3 >Geodesic Points</h3>  
+  <input id="searchInput" class="controls" type="text" placeholder="Enter a location">
+  <p>Buffer size : <input id="range" type="number" value='0' min='0' step="10" width="50px"/></p>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Code</th>
+      </tr>
+    </thead>
+    <tbody id="t_points"></tbody>
+  </table>
+   <input id="maps" type="hidden"/>
+</div>
+<div id="map" class="col col-sm-9 full"></div>
+</div>
+</div>
+ 
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.7/js/tether.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+
+
+ 
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyC2Jwxv8DEg59IVxsXYsj553-EnAIzlG4w&callback=initMap" async defer></script>
+
+<script>
+
+function initMap() {
+var map = new google.maps.Map(document.getElementById('maps'), {
+      center: {lat: -33.8688, lng: 151.2195},
+      zoom: 13
+    });
+ var input = document.getElementById('searchInput');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo('bounds', map);
+	 autocomplete.addListener('place_changed', function() {
+	 var place = autocomplete.getPlace();
+		if (!place.geometry) {
+		window.alert("Autocomplete's returned place contains no geometry");
+		return;
+		}
+		  for (var i = 0; i < place.address_components.length; i++) {
+	  	addMarker(place.formatted_address,place.geometry.location.lat(),place.geometry.location.lng());
+	  }
+	 });
+	
+}
+
+var map = L.map('map').setView([12.9715987,77.5945627], 16);
+var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+function addRowTable(code, coords){
+  var tr = document.createElement("tr");
+  var td = document.createElement("td");
+  td.textContent = code;
+  tr.appendChild(td);
+  tr.onclick = function(){map.flyTo(coords, 17);};
+  document.getElementById("t_points").appendChild(tr);
+}
+var buffers = [];
+function addMarker(code,lat,lng){
+  var p = L.marker([lat,lng]);
+  p.title = code;
+  p.alt = code;
+  p.bindPopup(code);
+  p.addTo(map);
+map.flyTo([lat,lng], 17);
+  var c = L.circle([lat,lng], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 0
+  }).addTo(map);
+  buffers.push(c);
+}
+
+function addMarkerload(code,lat,lng){
+  var p = L.marker([lat,lng]);
+  p.title = code;
+  p.alt = code;
+  p.bindPopup(code);
+  p.addTo(map);
+  var c = L.circle([lat,lng], {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 0
+  }).addTo(map);
+  buffers.push(c);
+}
+
+
+$(document).ready(function (){
+  var points = [["Bengaluru",12.9715987,77.5945627],
+                ["Chennai",13.0826802,80.2707184],
+                ["Mumbai",18.969539,72.819329],
+                ["Goa",15.2993265,74.12399599999999]];
+  for (var i=0; i < points.length; i++){
+    addMarkerload(points[i][0],points[i][1],points[i][2]);
+	  addRowTable(points[i][0], [points[i][1],points[i][2]]);
+	 
+  }
+});
+
+L.control.scale({maxWidth:240, metric:true, position: 'bottomleft'}).addTo(map);
+
+L.control.polylineMeasure({position:'topleft', imperial:false, clearMeasurementsOnStop: false, showMeasurementsClearControl: true}).addTo(map);
+
+
+$("#range").change(function(e){
+  var radius = parseInt($(this).val())
+  buffers.forEach(function(e){
+    e.setRadius(radius);
+    e.addTo(map);
+  });
+});
+
+</script>
+
+</body>
+</html>

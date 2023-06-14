@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<head>
+<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
+<script  src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+<link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="map" class="map" style="width: 100%;height: 400px;"></div>
+
+
+<script type="text/script" src="js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+
+// Set up the map using Mapbox GL JS
+mapboxgl.accessToken = 'pk.eyJ1IjoicGlyYXRlY2FtcGNvIiwiYSI6ImNsYmxvYWN5eTA5Zzczb255NGkxaGphNDAifQ.CvVo5ZwrOoCkJADip4i1kA';
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [8.359850,50.057504],
+  zoom: 12
+});
+
+// Wait for the style to finish loading
+map.on('style.load', function() {
+  // Retrieve stockist data from your data source or API
+  var stockistData = [
+    {
+      name: 'Stockist 1',
+      latitude: 12.3456,
+      longitude: 78.9012
+    },
+    {
+      name: 'Stockist 2',
+      latitude: 23.4567,
+      longitude: 67.8901
+    },
+    // Add more stockist data as needed
+  ];
+
+  // Process stockist data and create GeoJSON features
+  var features = stockistData.map(function(stockist) {
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [stockist.longitude, stockist.latitude]
+      },
+      properties: {
+        name: stockist.name
+      }
+    };
+  });
+
+  // Add the GeoJSON source to the map
+  map.addSource('stockists', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: features
+    }
+  });
+
+  // Add a layer to style and display the stockists
+  map.addLayer({
+    id: 'stockists-layer',
+    type: 'circle',
+    source: 'stockists',
+    paint: {
+      'circle-color': 'red',
+      'circle-radius': 6
+    }
+  });
+
+  // Add popups or custom markers to display additional information for each stockist
+  map.on('click', 'stockists-layer', function(e) {
+    var coordinates = e.features[0].geometry.coordinates.slice();
+    var stockistName = e.features[0].properties.name;
+
+    // Create a popup or custom marker to display the stockist information
+    new mapboxgl.Popup()
+      .setLngLat(coordinates)
+      .setHTML('<h3>' + stockistName + '</h3>')
+      .addTo(map);
+  });
+
+  // Change the cursor style to a pointer when hovering over stockists
+  map.on('mouseenter', 'stockists-layer', function() {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+
+  // Change the cursor style back to the default when not hovering over stockists
+  map.on('mouseleave', 'stockists-layer', function() {
+    map.getCanvas().style.cursor = '';
+  });
+});
+
+
+</script>
+</body>
+</html>

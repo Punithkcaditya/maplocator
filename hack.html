@@ -1,0 +1,30 @@
+<script>
+    // Extract the JSON object from the function call
+    var url = 'https://stockist.co/api/v1/u14678/widget.js?callback=_stockistConfigCallback_u14678';
+
+fetch(url)
+  .then(response => response.text())
+  .then(text => {
+    // Extract the JSON object from the response
+    var startIndex = text.indexOf('{');
+    var endIndex = text.lastIndexOf('}');
+    var json = text.substring(startIndex, endIndex + 1);
+
+    // Parse the JSON object
+    var config = JSON.parse(json);
+
+    // Access the desired properties
+    var latitude = config.initial.latitude;
+    var longitude = config.initial.longitude;
+    var zoom = config.initial.zoom;
+    var searchType = config.search_type;
+    var maxResults = config.max_results;
+
+    console.log(latitude, longitude, zoom, searchType, maxResults);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+
+</script>

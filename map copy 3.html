@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title></title>
+  <style>
+    html, body, .full, #map{
+  margin: 0;
+  padding:0;
+}
+
+/* #map{
+  height: 300px;
+} */
+
+#t_points h2{
+  background: #828282;
+    padding: 15px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Oswald';
+    clear: both;
+}
+
+.search-title {
+    font-size: 1em;
+    font-weight: 500;
+    margin: 0;
+}
+
+.left-class-name{
+  max-width: 80%;
+}
+
+.right-class-name{
+  width: 20%;
+    text-align: center;
+    padding-top: 2em;
+}
+
+#t_points td{
+  display: flex;
+}
+
+#map{
+  width: 100%;
+    height: 500px;
+}
+
+.mt-3{
+  margin-top: 3em;
+}
+
+  </style>
+  <link href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" rel="stylesheet" type="text/css" />
+  <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /> -->
+	<link href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" rel="stylesheet" type="text/css" />
+
+
+
+</head>
+<body>
+
+<div class="container mt-3">
+<div class="row full">
+<div class="col col-sm-4 full" style="overflow: auto;">
+  <h1 class="search-title"><img src="https://fonts.gstatic.com/s/i/googlematerialicons/place/v15/24px.svg">
+    Find a location near you
+    </h1>
+  <input id="searchInput" class="controls" type="text" placeholder="Enter a location">
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr>
+        <th>All locations (2)</th>
+      </tr>
+    </thead>
+    <tbody id="t_points"></tbody>
+  </table>
+   <input id="maps" type="hidden"/>
+</div>
+<div class="col col-sm-8 full">
+  <div id="map" ></div>
+</div>
+</div>
+</div>
+ 
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.7/js/tether.min.js"></script>
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script> -->
+<script type="text/script" src="js/bootstrap.min.js"></script>
+
+
+ 
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyC2Jwxv8DEg59IVxsXYsj553-EnAIzlG4w&callback=initMap" async defer></script>
+
+<script>
+setTimeout(function () {
+    window.dispatchEvent(new Event('resize'));
+}, 1000);
+
+function initMap() {
+    var map = new google.maps.Map(document.getElementById('maps'), {
+        center: {lat: -33.8688, lng: 151.2195},
+        zoom: 13
+    });
+
+    var input = document.getElementById('searchInput');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo('bounds', map);
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        console.log(place.geometry.location.lat());
+        console.log(place.geometry.location.lng());
+        if (!place.geometry) {
+            window.alert("Autocomplete's returned place contains no geometry");
+            return;
+        }
+        for (var i = 0; i < place.address_components.length; i++) {
+            addMarker(place.formatted_address, place.geometry.location.lat(), place.geometry.location.lng());
+        }
+    });
+
+}
+
+var map = L.map('map').setView([12.9867603, 77.59583529999999], 16);
+var OpenStreetMap_Mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    noWrap: true,
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+function addRowTable(code, coords, desc, no, callback) {
+    var tr = document.createElement("tr");
+    var dynamicId = "element_" + no;
+    tr.setAttribute("id", dynamicId);
+    var td = document.createElement("td");
+    var divleft = document.createElement("div");
+    var h2 = document.createElement("h2");
+    var p = document.createElement("p");
+    var divrightt = document.createElement("div");
+    var a = document.createElement("a");
+    a.href = 'https://www.google.com/maps/dir/?api=1&origin=&destination=Superior+Codelabs%2CGround+Floor%2C+Prestige+Center+Point+cunningham+road%2C+Vasanth+Nagar%2CBengalore%2C+Karnataka%2C+India';
+    a.setAttribute('target', '_blank');
+    var svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgElement.setAttribute('width', '34');
+    svgElement.setAttribute('height', '34');
+    svgElement.setAttribute('viewBox', '0 0 34 34');
+    svgElement.setAttribute('fill', 'none');
+    var pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathElement.setAttribute('d', 'M17.5867 9.24375L17.9403 8.8902V8.8902L17.5867 9.24375ZM16.4117 9.24375L16.7653 9.59731L16.7675 9.59502L16.4117 9.24375ZM8.91172 16.7437L8.55817 16.3902L8.91172 16.7437ZM8.91172 17.9229L8.55817 18.2765L8.55826 18.2766L8.91172 17.9229ZM16.4117 25.4187H16.9117V25.2116L16.7652 25.0651L16.4117 25.4187ZM16.4117 25.4229H15.9117V25.63L16.0582 25.7765L16.4117 25.4229ZM25.0909 17.9229L25.4444 18.2765L25.4467 18.2742L25.0909 17.9229ZM25.4403 16.3902L17.9403 8.8902L17.2332 9.5973L24.7332 17.0973L25.4403 16.3902ZM17.9403 8.8902C17.4213 8.3712 16.5737 8.3679 16.0559 8.89248L16.7675 9.59502C16.8914 9.4696 17.1022 9.4663 17.2332 9.5973L17.9403 8.8902ZM16.0582 8.8902L8.55817 16.3902L9.26527 17.0973L16.7653 9.5973L16.0582 8.8902ZM8.55817 16.3902C8.0379 16.9105 8.0379 17.7562 8.55817 18.2765L9.26527 17.5694C9.13553 17.4396 9.13553 17.227 9.26527 17.0973L8.55817 16.3902ZM8.55826 18.2766L16.0583 25.7724L16.7652 25.0651L9.26517 17.5693L8.55826 18.2766ZM15.9117 25.4187V25.4229H16.9117V25.4187H15.9117ZM16.0582 25.7765C16.5784 26.2967 17.4242 26.2967 17.9444 25.7765L17.2373 25.0694C17.1076 25.1991 16.895 25.1991 16.7653 25.0694L16.0582 25.7765ZM17.9444 25.7765L25.4444 18.2765L24.7373 17.5694L17.2373 25.0694L17.9444 25.7765ZM25.4467 18.2742C25.9631 17.7512 25.9663 16.9096 25.438 16.3879L24.7354 17.0995C24.8655 17.2279 24.8687 17.4363 24.7351 17.5716L25.4467 18.2742Z ');
+    pathElement.setAttribute('fill', '#1967d2');
+    var pathElement2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathElement2.setAttribute('fill-rule', 'evenodd');
+    pathElement2.setAttribute('clip-rule', 'evenodd');
+    pathElement2.setAttribute('d', 'M19 19.8333V17.75H15.6667V20.25H14V16.9167C14 16.4542 14.3708 16.0833 14.8333 16.0833H19V14L21.9167 16.9167L19 19.8333Z');
+    pathElement2.setAttribute('fill', '#1967d2');
+
+    // Create the circle element
+    var circleElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circleElement.setAttribute('class', 'directions-button-background');
+    circleElement.setAttribute('cx', '17');
+    circleElement.setAttribute('cy', '17');
+    circleElement.setAttribute('r', '16.5');
+    circleElement.setAttribute('stroke', '#1967d2');
+
+    svgElement.appendChild(pathElement);
+    svgElement.appendChild(pathElement2);
+    svgElement.appendChild(circleElement);
+    h2.textContent = code;
+    p.textContent = desc;
+    tr.appendChild(td);
+    td.appendChild(divleft);
+    td.appendChild(divrightt);
+    divleft.appendChild(h2);
+    divleft.appendChild(p);
+    divleft.className = 'left-class-name';
+    divrightt.className = 'right-class-name';
+    divrightt.appendChild(a);
+    a.appendChild(svgElement);
+    tr.onclick = function () { map.flyTo(coords, 17); };
+    document.getElementById("t_points").appendChild(tr);
+  }
+
+  function addMarkerload(code, lat, lng, no) {
+    var elementId = 'element_' + no;
+    var elements = document.getElementById(elementId);
+    if (elements) {
+      var clonedElements = elements.cloneNode(true);
+      var p = L.marker([lat, lng]);
+      p.title = code;
+      p.alt = code;
+      p.bindPopup(clonedElements);
+      p.addTo(map);
+      var c = L.circle([lat, lng], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: 0
+      }).addTo(map);
+      buffers.push(c);
+    } else {
+      setTimeout(function () {
+        addMarkerload(code, lat, lng, no);
+      }, 100);
+    }
+  }
+
+  $(document).ready(function () {
+    var points = [
+      ["Superior Codelabs-1", "Ground Floor, Prestige Center Point cunningham road, Vasanth Nagar Bengalore, Karnataka, India", 12.9867603, 77.59583529999999],
+      ["Superior Codelabs-2", "Ground Floor, Prestige Center Point cunningham road, Vasanth Nagar Bengalore, Karnataka, India", 12.9867603, 77.59583529999999],
+      ["Superior Codelabs-3", "Ground Floor, Prestige Center Point cunningham road, Vasanth Nagar Bengalore, Karnataka, India", 12.9867603, 77.59583529999999],
+    ];
+    for (var i = 0; i < points.length; i++) {
+      addRowTable(points[i][0], [points[i][2], points[i][3]], points[i][1], i);
+      addMarkerload(points[i][0], points[i][2], points[i][3], i);
+
+    }
+  });
+
+  L.control.scale({ maxWidth: 240, metric: true, position: 'bottomleft' }).addTo(map);
+
+  L.control.polylineMeasure({ position: 'topleft', unit: 'metres', showBearings: true, clearMeasurementsOnStop: false, showClearControl: true, showUnitControl: true }).addTo(map);
+
+  map.on('click', function (e) {
+    if (buffers.length > 0) {
+      for (var i = 0; i < buffers.length; i++) {
+        map.removeLayer(buffers[i]);
+      }
+    }
+    buffers = [];
+    var buf = L.circle(e.latlng, {
+      color: 'red',
+      fillColor: '#f03',
+      fillOpacity: 0.5,
+      radius: 0
+    }).addTo(map);
+    buffers.push(buf);
+    $("#map-lat").html(e.latlng.lat);
+    $("#map-lng").html(e.latlng.lng);
+    $("#searchInput").val('');
+  });
+  function addMarker(code, lat, lng) {
+    if (buffers.length > 0) {
+      for (var i = 0; i < buffers.length; i++) {
+        map.removeLayer(buffers[i]);
+      }
+    }
+    buffers = [];
+    var buf = L.circle([lat, lng], {
+      color: 'red',
+      fillColor: '#f03',
+      fillOpacity: 0.5,
+      radius: 0
+    }).addTo(map);
+    buffers.push(buf);
+    $("#map-lat").html(lat);
+    $("#map-lng").html(lng);
+  }
+
+</script>
+
+</body>
+</html>
