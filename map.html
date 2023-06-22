@@ -122,8 +122,8 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   position: fixed;
-  top: 61%;
-  left: 80%;
+  top: 35%;
+  left: 70%;
   transform: translate(-50%, -50%);
   z-index: 9999;
 }
@@ -199,6 +199,8 @@
 <script>
 
 
+// Above is for lazy loding images
+
 document.addEventListener("DOMContentLoaded", function() {
    isGlobal  = false;
    markersstorage = [];
@@ -219,8 +221,6 @@ var map = new google.maps.Map(document.getElementById('maps'), {
     autocomplete.bindTo('bounds', map);
 	 autocomplete.addListener('place_changed', function() {
 	 var place = autocomplete.getPlace();
-   console.log(place.geometry.location.lat());
-   console.log(place.geometry.location.lng());
 		if (!place.geometry) {
 		window.alert("Autocomplete's returned place contains no geometry");
 		return;
@@ -238,8 +238,8 @@ var map = L.map('map').setView([12.9867603,77.59583529999999], 16);
 
 var Jawg_Terrain = L.tileLayer('https://{s}.tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
 	attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-	minZoom: 0,
-	maxZoom: 22,
+	minZoom: 2,
+	maxZoom: 18,
 	subdomains: 'abcd',
 	accessToken: 'o9RMjRDT5QTT2Y9VFqyagCZQOEib1ZoxjIWwOHSJz5jbeQaticS0XbdlAnaBr7Is'
 }).addTo(map);
@@ -273,55 +273,69 @@ function updatePlacesList() {
   var tbodyElement = document.getElementById("t_points");
 tbodyElement.innerHTML = ""; // Empty the contents of the tbody element
 
-  var bounds = map.getBounds();
-  var jsonData = JSON.stringify(bounds);
-  var southWestLat = JSON.parse(jsonData);
-  var longitude = southWestLat._southWest.lng;
-var latitude = southWestLat._southWest.lat;
+//   var bounds = map.getBounds();
+//   var jsonData = JSON.stringify(bounds);
+//   var southWestLat = JSON.parse(jsonData);
+//   var longitude = southWestLat._southWest.lng;
+// var latitude = southWestLat._southWest.lat;
+
+var mapcenter = map.getCenter();
+var latitude = mapcenter.lat;
+var longitude = mapcenter.lng;
   
 // fetching from json file
 
 // Fetch the JSON data
+
+setTimeout(function() {
 fetch('test.json')
     .then(response => response.json())
     .then(data => {
-      // Filter the data based on latitude and longitude
-      var filteredData = data.filter(item => {
-        var distance = calculateDistance(item.latitude, item.longitude, latitude, longitude);
-        return distance <= 5000;
-      });
-      // Use the filtered data as needed
-      console.log(filteredData);
-      if(filteredData.length > 0){
-        locationgenuvine.style.display = "table";
-        leftContentDiv.innerHTML = '';
-        for (var i = 0; i < filteredData.length; i++) {
-        var locationdata = filteredData[i];
-        addRowTable(locationdata.name, [locationdata.latitude,locationdata.longitude],locationdata.address_line_1,i, locationdata.website, locationdata.image_url, locationdata.phone, locationdata.email);
-        addMarkerload(locationdata.name,locationdata.latitude,locationdata.longitude,i);
-      }
-      countDiv.innerHTML = filteredData.length;
-      }else{
-        var htmlCode = `<div class="stockist-result-message">
-          <i class="fas fa-map-marker-alt stockist-icon stockist-feature-color" aria-hidden="true"></i>
-                  <span class="stockist-result-message-text">Sorry, we didn't find any stores nearby.</span>
-                </div>`;
-                leftContentDiv.innerHTML = htmlCode;
-        locationgenuvine.style.display = "none";
-        removeMarkerfuc();
-      }
-      loadingIndicator.style.display = "none";
 
-      // loop
-    })
-    .catch(error => {
-      loadingIndicator.style.display = "none";
-      locationgenuvine.style.display = "none";
-      console.error('Error:', error);
-    });
-  
-  }
-  isGlobal = true;
+    // map zoom cuatom
+    map.on('zoomend', function() {
+  var zoomLevel = map.getZoom();
+  var newRadius = 100 / Math.pow(2, zoomLevel - 10);
+  var distance;
+  distance = newRadius; 
+  filteredData = data.filter(item => {
+    var itemDistance = calculateDistance(item.latitude, item.longitude, latitude, longitude);
+    return itemDistance <= distance;
+  });
+});
+
+// Use the filtered data as needed
+if(filteredData.length > 0){
+locationgenuvine.style.display = "table";
+leftContentDiv.innerHTML = '';
+for (var i = 0; i < filteredData.length; i++) {
+var locationdata = filteredData[i];
+addRowTable(locationdata.name, [locationdata.latitude,locationdata.longitude],locationdata.address_line_1,i, locationdata.website, locationdata.image_url, locationdata.phone, locationdata.email);
+addMarkerload(locationdata.name,locationdata.latitude,locationdata.longitude,i);
+}
+countDiv.innerHTML = filteredData.length;
+}else{
+var htmlCode = `<div class="stockist-result-message">
+  <i class="fas fa-map-marker-alt stockist-icon stockist-feature-color" aria-hidden="true"></i>
+          <span class="stockist-result-message-text">Sorry, we didn't find any stores nearby.</span>
+        </div>`;
+        leftContentDiv.innerHTML = htmlCode;
+locationgenuvine.style.display = "none";
+removeMarkerfuc();
+}
+loadingIndicator.style.display = "none";
+
+// loop
+})
+.catch(error => {
+loadingIndicator.style.display = "none";
+locationgenuvine.style.display = "none";
+console.error('Error:', error);
+});
+}, 1000);
+}
+
+isGlobal = true;
 }
 
 
@@ -362,9 +376,14 @@ function addRowTable(code, coords, desc, no, link, imageUrlFromFunction, phone, 
   // image element
   var imageUrl = imageUrlFromFunction !== '' ? imageUrlFromFunction : "https://images.squarespace-cdn.com/content/v1/5ff3e2c7392ba84a98bcbccf/1609905163017-CRKS30Q1ZZJ269K94KZP/SCC_Logo_Tagline.png?format=1500w";
   var img = document.createElement("img");
+  img.onerror = function() {
+  // Error handling: If the image fails to load, replace it with a fallback image
+  img.src = "";
+  };
   img.src = imageUrl;
   img.alt = "Image description";
   img.style.width = "180px";
+  img.className = "lazy"; 
   // image setting end
   // phone
   var phonepara = document.createElement("p");
@@ -417,6 +436,11 @@ svgElement.appendChild(circleElement);
   tr.onclick = function(){map.flyTo(coords, 17);};
   document.getElementById("t_points").appendChild(tr);
 }
+
+
+
+
+
 var buffers = [];
 function addMarker(code,lat,lng){
   var p = L.marker([lat,lng]);
